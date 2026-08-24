@@ -24,6 +24,9 @@
 ## 2. 현재 파일 구조
 ```text
 .
+├─ .devcontainer/             # Codespaces 컨테이너 생성 시 JDK 17·Android SDK 자동 설치 (2026-08-24 신규)
+│  ├─ devcontainer.json
+│  └─ setup-android-sdk.sh
 ├─ app/                       # Android 휴대폰 앱
 │  └─ src/main/java/com/david/assistant/
 │     ├─ MainActivity.kt      # 권한, Android 음성 인식, TTS 초기화
@@ -54,7 +57,7 @@
 | 워치 호출 | 워치 버튼 → Wear OS Data Layer 메시지 → 휴대폰 `MainActivity` 열기 | `WearMainActivity.kt`, `WearRequestListenerService.kt` | 미확인 |
 | 버즈 | Android 표준 Bluetooth 헤드셋 오디오 경로에 의존 | 별도 전용 코드 없음 | 미확인 |
 
-**중요:** '구현됨'은 소스 파일이 작성된 상태를 뜻한다. Android SDK/Gradle이 이 작업 환경에 없어서 빌드와 실기기 테스트는 아직 수행하지 못했다.
+**중요:** '구현됨'은 소스 파일이 작성된 상태를 뜻한다. **(2026-08-24 갱신)** Codespaces 환경에서 `./gradlew :app:assembleDebug`가 실제로 `BUILD SUCCESSFUL`로 성공하는 것을 확인했다 (JDK 버전 문제와 Android SDK 미설치 문제를 해결— 자세한 내용은 PROGRESS.md의 "2026-08-24 — Gradle assembleDebug 빌드 실패 수정" 참고). 다만 이건 **컴파일 성공만 확인된 것**이며, 위 표의 "실기기 확인" 칸은 여전히 실제 기기/에뮬레이터에서 앱을 설치·실행해본 적이 없어 모두 "미확인" 그대로다.
 
 ## 4. 의도적으로 구현하지 않은 기능
 - 실제 LLM API 또는 Ollama 통신
@@ -71,8 +74,9 @@
 - UI: Jetpack Compose Material 3 (휴대폰)
 - Android 최소 버전: API 26 (Android 8)
 - Wear 최소 버전: API 30 (Wear OS 3)
-- 컴파일/대상 SDK: 35
-- Java/Kotlin 도구 체인: 17
+- 컴파일/대상 SDK: 36 (`app/build.gradle.kts`를 직접 읽어 2026-08-24에 확인·정정. 2026-08-22 세션에서 targetSdk를 36으로 올렸지만 이 문서에는 반영되지 않았던 상태였음)
+- Java/Kotlin 도구 체인: 17 (2026-08-24, Codespaces에서 JDK 17로 실제 빌드 성공까지 확인함. 기본 JDK가 다른 버전이면 빌드가 즉시 실패하니 주의 — PROGRESS.md 참고)
+- Android SDK: Codespaces 컨테이너에 `platform-tools` / `platforms;android-36` / `build-tools;36.0.0`·`35.0.0` 설치 확인 (2026-08-24). `.devcontainer/devcontainer.json` + `.devcontainer/setup-android-sdk.sh`로 새 Codespace 생성 시 자동 설치되도록 구성함 — 실제 신규 컨테이너에서 동작하는지는 **확인 필요**
 - 워치 통신: Google Play services Wearable Data Layer
 - 패키지 ID: 휴대폰과 워치 모두 `com.david.assistant` (Data Layer 페어링 목적)
 - 버전 관리: **TBD** — Git 저장소/원격 백업 여부를 다음 작업자가 확인 후 이 줄을 갱신할 것

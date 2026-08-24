@@ -12,6 +12,22 @@
 - 다음:
 -->
 
+## 2026-08-24 — Gradle assembleDebug 빌드 실패 수정
+- 한 일: `./gradlew :app:assembleDebug --stacktrace` 실행 시 발생한 두 가지 실제 에러를 로그로 확인 후 수정.
+  1. 첫 번째 에러: `java.lang.IllegalArgumentException: 25.0.2` (`org.jetbrains.kotlin.com.intellij.util.lang.JavaVersion.parse`에서 발생, `KotlinCoreEnvironment` 생성 중 호출). 원인: 이 Codespace의 기본 JDK가 25.0.2(Microsoft 빌드)였는데, Gradle 8.13에 내장된 Kotlin DSL 스크립트 컴파일러가 `settings.gradle.kts`/`build.gradle.kts`를 해석하는 단계에서 "25.0.2" 버전 문자열을 파싱하지 못해 즉시 실패함. HANDOFF.md 8번 섹션이 "JDK 17이 아닌 다른 버전이 기본으로 잡혀있는 경우"로 미리 예측했던 바로 그 케이스였음을 이번에 직접 확인. sdkman으로 JDK 17(`17.0.20+1-ms`, Microsoft 빌드)을 설치하고 기본값으로 전환해 해결.
+  2. 두 번째 에러: `SDK location not found. Define a valid SDK location with an ANDROID_HOME environment variable or by setting the sdk.dir path in your project's local properties file at '/workspaces/David/local.properties'.` 원인: 이 Codespace에 Android SDK 자체가 설치돼 있지 않았음. Android cmdline-tools(`commandlinetools-linux-13114758_latest.zip`)를 `/home/codespace/android-sdk`에 설치, 라이선스 전체 동의(`sdkmanager --licenses`), `platform-tools` / `platforms;android-36` / `build-tools;36.0.0` 설치. 빌드가 진행되며 AGP가 `build-tools;35.0.0`도 추가로 요구해 자동 설치됨(로그에서 직접 확인). `local.properties`에 `sdk.dir=/home/codespace/android-sdk` 기록.
+  3. 위 두 가지를 고친 뒤에도 `dexBuilderDebug`~`mergeExtDexDebug` 단계에서 "Gradle build daemon disappeared unexpectedly"가 두 차례 재현됨. `ps aux`로 확인해보니 이전 세션들이 남긴 JDK 25 기반의 고아 Gradle 데몬 2개(gradle 9.2.0, gradle 8.13 각각 1개)가 이 2-vCPU 컨테이너에서 계속 CPU/메모리를 점유하고 있었음. `./gradlew --stop` + 남은 프로세스 강제 종료로 리소스를 확보한 뒤 재시도하니 성공. **다만 데몬이 사라진 정확한 원인(OOM 여부 등)은 확인하지 못함 — `dmesg`와 `/sys/fs/cgroup/memory.events`(`oom 0`, `oom_kill 0`)에 OOM 킬 기록이 없었음. 리소스 확보와 성공 재현이 시간상 일치했을 뿐, 인과관계는 확인 필요로 남김.**
+- 변경한 파일: `local.properties`(신규 생성. `.gitignore`에 이미 등재돼 있어 Git에는 커밋되지 않음) / `.devcontainer/devcontainer.json`(신규) / `.devcontainer/setup-android-sdk.sh`(신규) / `docs/PROGRESS.md`, `docs/HANDOFF.md`(이 기록). 그 외 앱 소스나 Gradle 설정 파일은 변경 없음 — JDK 설치와 Android SDK 설치는 리포지토리 밖(Codespaces 컨테이너 환경) 조치였음.
+- 확인: 성공. `./gradlew :app:assembleDebug --stacktrace` 최종 재실행 결과 `BUILD SUCCESSFUL in 51s` (37 actionable tasks: 12 executed, 25 up-to-date), `app/build/outputs/apk/debug/app-debug.apk` 생성 확인. **주의: 이건 "빌드/컴파일 성공"만 확인된 것이며, 에뮬레이터나 실기기에 앱을 설치·실행해본 것은 아님 — 실기기 테스트는 여전히 미수행 (HANDOFF.md 3번 표 참고).**
+- 결정 또는 위험:
+  - AGP/Gradle/compileSdk/Kotlin 버전은 **하나도 바꾸지 않음** — 원래대로 AGP 8.13.0, Gradle 8.13(wrapper), compileSdk 36, Kotlin 2.0.21 그대로 유지. 이번 실패는 전부 "코드가 실행되는 환경"(JDK, Android SDK 설치 여부) 문제였고 프로젝트 설정 파일 자체의 문제가 아니었음. 참고로 `app/build.gradle.kts`를 직접 읽어 확인한 결과 `targetSdk`도 36으로, HANDOFF.md 5번 섹션에 남아있던 "35" 표기는 이번에 정정함(아래 HANDOFF.md 변경 참고).
+  - JDK 17 설치와 Android SDK 설치는 sdkman/수동 명령으로 **이번 Codespace 컨테이너에만** 적용됐던 상태라, 컨테이너가 새로 생성되면(새 Codespace, 컨테이너 재빌드) 같은 문제를 다시 겪을 위험이 있었음 — HANDOFF.md 8번이 예측했던 리스크가 실제로 재현된 것.
+  - 이 리스크를 없애기 위해 같은 세션에서 `.devcontainer/devcontainer.json`(JDK 17 자동 설치, `ghcr.io/devcontainers/features/java:1` 사용) + `.devcontainer/setup-android-sdk.sh`(이번에 수동으로 했던 Android SDK 설치 과정을 그대로 스크립트화, `postCreateCommand`로 실행)를 추가함. **이 devcontainer 설정이 실제로 새 Codespace 생성 시 의도대로 동작하는지는 이번 세션에서 컨테이너를 새로 만들어보지 못해 검증하지 못함 — 확인 필요.**
+- 다음:
+  - 다음에 새 Codespace를 생성할 때 `.devcontainer/devcontainer.json`이 JDK 17 + Android SDK를 자동으로 세팅하는지 실제로 검증
+  - 에뮬레이터 또는 실기기에 `app-debug.apk`를 설치해 HANDOFF.md 6번 3~4단계(텍스트 입력 → 음성 버튼 → TTS 응답) 확인
+  - `wear` 모듈(`:wear:assembleDebug`)도 같은 환경에서 빌드되는지 아직 미확인
+
 ## 2026-08-22 — Gradle 프로젝트 골격 생성 (app/wear 모듈)
 - 한 일: `D:\...\DAVID` 루트에 있던 4개 소스 파일(`DavidApp.kt`, `MainActivity.kt`, `SimpleRecognitionListener.kt`, `WearRequestListenerService.kt`)의 실제 내용을 읽어 HANDOFF.md 설명과 일치함을 확인. 이후 정식 Android Gradle 프로젝트 골격(app/wear 모듈, AndroidManifest.xml, build.gradle.kts, settings.gradle.kts, res 리소스)을 새로 작성하고 기존 4개 파일을 `app/src/main/java/com/david/assistant/`로 정리. 워치 쪽 발신 코드가 없던 것을 확인하고 `wear/.../WearMainActivity.kt`(신규)를 작성해 "/david/open" 메시지 발신 기능을 채움. GitHub 저장소(`github.com/Dalbonz/David`, Public, 비어있음) 확인.
 - 변경한 파일(신규): 루트 `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, `.gitignore` / `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `app/src/main/res/values/{strings,themes}.xml` / `wear/build.gradle.kts`, `wear/src/main/AndroidManifest.xml`, `wear/src/main/java/com/david/assistant/wear/WearMainActivity.kt`, `wear/src/main/res/values/{strings,themes}.xml`. 기존 4개 .kt 파일은 내용 변경 없이 위치만 이동.

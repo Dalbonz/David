@@ -1,0 +1,17 @@
+{
+  "name": "DAVID (Android)",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "jdkDistro": "ms",
+      "installGradle": false,
+      "installMaven": false
+    }
+  },
+  "containerEnv": {
+    "ANDROID_HOME": "/home/codespace/android-sdk",
+    "ANDROID_SDK_ROOT": "/home/codespace/android-sdk"
+  },
+  "postCreateCommand": "bash .devcontainer/setup-android-sdk.sh"
+}
