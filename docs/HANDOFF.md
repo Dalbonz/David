@@ -76,7 +76,7 @@
 - Wear 최소 버전: API 30 (Wear OS 3)
 - 컴파일/대상 SDK: 36 (`app/build.gradle.kts`를 직접 읽어 2026-08-24에 확인·정정. 2026-08-22 세션에서 targetSdk를 36으로 올렸지만 이 문서에는 반영되지 않았던 상태였음)
 - Java/Kotlin 도구 체인: 17 (2026-08-24, Codespaces에서 JDK 17로 실제 빌드 성공까지 확인함. 기본 JDK가 다른 버전이면 빌드가 즉시 실패하니 주의 — PROGRESS.md 참고)
-- Android SDK: Codespaces 컨테이너에 `platform-tools` / `platforms;android-36` / `build-tools;36.0.0`·`35.0.0` 설치 확인 (2026-08-24). `.devcontainer/devcontainer.json` + `.devcontainer/setup-android-sdk.sh`로 새 Codespace 생성 시 자동 설치되도록 구성함 — 실제 신규 컨테이너에서 동작하는지는 **확인 필요**
+- Android SDK: Codespaces 컨테이너에 `platform-tools` / `platforms;android-36` / `build-tools;36.0.0`·`35.0.0` 설치 확인 (2026-08-24). `.devcontainer/devcontainer.json` + `.devcontainer/setup-android-sdk.sh`로 새 Codespace 생성 시 자동 설치되도록 구성함. `setup-android-sdk.sh`는 빈 `ANDROID_HOME`에 대해 처음부터 끝까지 실제 실행해 검증 완료(그 과정에서 `yes | sdkmanager --licenses`가 `pipefail`과 충돌해 죽는 버그를 발견해 수정함). 다만 `devcontainer.json`의 Java feature 자체는 실제 새 Codespace 생성으로는 아직 확인 못함 — **확인 필요**
 - 워치 통신: Google Play services Wearable Data Layer
 - 패키지 ID: 휴대폰과 워치 모두 `com.david.assistant` (Data Layer 페어링 목적)
 - 버전 관리: **TBD** — Git 저장소/원격 백업 여부를 다음 작업자가 확인 후 이 줄을 갱신할 것

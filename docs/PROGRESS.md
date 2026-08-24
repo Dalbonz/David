@@ -22,9 +22,10 @@
 - 결정 또는 위험:
   - AGP/Gradle/compileSdk/Kotlin 버전은 **하나도 바꾸지 않음** — 원래대로 AGP 8.13.0, Gradle 8.13(wrapper), compileSdk 36, Kotlin 2.0.21 그대로 유지. 이번 실패는 전부 "코드가 실행되는 환경"(JDK, Android SDK 설치 여부) 문제였고 프로젝트 설정 파일 자체의 문제가 아니었음. 참고로 `app/build.gradle.kts`를 직접 읽어 확인한 결과 `targetSdk`도 36으로, HANDOFF.md 5번 섹션에 남아있던 "35" 표기는 이번에 정정함(아래 HANDOFF.md 변경 참고).
   - JDK 17 설치와 Android SDK 설치는 sdkman/수동 명령으로 **이번 Codespace 컨테이너에만** 적용됐던 상태라, 컨테이너가 새로 생성되면(새 Codespace, 컨테이너 재빌드) 같은 문제를 다시 겪을 위험이 있었음 — HANDOFF.md 8번이 예측했던 리스크가 실제로 재현된 것.
-  - 이 리스크를 없애기 위해 같은 세션에서 `.devcontainer/devcontainer.json`(JDK 17 자동 설치, `ghcr.io/devcontainers/features/java:1` 사용) + `.devcontainer/setup-android-sdk.sh`(이번에 수동으로 했던 Android SDK 설치 과정을 그대로 스크립트화, `postCreateCommand`로 실행)를 추가함. **이 devcontainer 설정이 실제로 새 Codespace 생성 시 의도대로 동작하는지는 이번 세션에서 컨테이너를 새로 만들어보지 못해 검증하지 못함 — 확인 필요.**
+  - 같은 세션에서 `.devcontainer/devcontainer.json`(JDK 17 자동 설치, `ghcr.io/devcontainers/features/java:1` 사용) + `.devcontainer/setup-android-sdk.sh`(Android SDK 설치 자동화, `postCreateCommand`로 실행)를 추가함.
+- 확인(추가, 같은 날): `devcontainer.json`이 실제 새 Codespace를 띄워야 완전히 검증되지만, 그건 이 세션에서 직접 만들 수 없어서 대신 **`setup-android-sdk.sh`를 완전히 빈 `ANDROID_HOME`에 대고 실제로 실행**해 처음부터 끝까지(cmdline-tools 다운로드 → 라이선스 동의 → platform-tools/platforms;android-36/build-tools 36·35 설치 → `local.properties` 작성) 재현했다. 첫 실행에서 실제로 실패하는 버그를 잡았다: `set -euo pipefail` 상태에서 `yes | sdkmanager ... --licenses`가 `yes`의 SIGPIPE(exit 141)를 파이프 실패로 간주해 스크립트가 라이선스 동의 단계에서 죽었음(로그: `[setup-android-sdk] Accepting SDK licenses` 이후 중단, exit 141). `|| true`를 추가해 수정 후 같은 방식으로 재실행하니 `SCRIPT_EXIT:0`으로 끝까지 성공. 테스트 후 실제 `local.properties`(`sdk.dir=/home/codespace/android-sdk`)로 복구하고 `./gradlew :app:assembleDebug`가 여전히 `BUILD SUCCESSFUL`인 것도 재확인했다. **JDK 17 설치 부분(`ghcr.io/devcontainers/features/java:1`)은 sdkman으로 JDK를 설치하는 방식이라 이 세션에서 이미 검증된 절차(JDK 17.0.20+1-ms 설치·전환 성공)와 동일하지만, feature 자체를 통한 설치는 실제 새 컨테이너 빌드로 아직 확인 못함 — 확인 필요로 남김.**
 - 다음:
-  - 다음에 새 Codespace를 생성할 때 `.devcontainer/devcontainer.json`이 JDK 17 + Android SDK를 자동으로 세팅하는지 실제로 검증
+  - 다음에 실제로 새 Codespace를 생성할 때 `devcontainer.json`의 Java feature가 문제없이 도는지 최종 확인(스크립트 쪽은 이미 처음부터 끝까지 재현 검증 완료)
   - 에뮬레이터 또는 실기기에 `app-debug.apk`를 설치해 HANDOFF.md 6번 3~4단계(텍스트 입력 → 음성 버튼 → TTS 응답) 확인
   - `wear` 모듈(`:wear:assembleDebug`)도 같은 환경에서 빌드되는지 아직 미확인
 

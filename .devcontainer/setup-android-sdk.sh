@@ -24,7 +24,10 @@ fi
 SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
 
 echo "[setup-android-sdk] Accepting SDK licenses"
-yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses > /dev/null
+# `yes` gets SIGPIPE (exit 141) once sdkmanager stops reading input; with
+# `set -o pipefail` that alone would fail the pipeline even though license
+# acceptance succeeded, so it's explicitly not treated as a failure here.
+yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses > /dev/null || true
 
 echo "[setup-android-sdk] Installing platform-tools, platform 36, build-tools 36.0.0/35.0.0"
 "$SDKMANAGER" --sdk_root="$ANDROID_HOME" \
