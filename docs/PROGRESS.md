@@ -12,6 +12,13 @@
 - 다음:
 -->
 
+## 2026-08-24 — ROADMAP.md 신규 작성 (모듈형 아키텍처·음성 우선·자비스 지향)
+- 한 일: 아버지가 세션 중 구두로 설명한 프로젝트 방향(아들 아이디어)을 `docs/ROADMAP.md`로 처음 문서화. 핵심 3원칙: (1) 모든 기능을 붙였다 뗄 수 있는 독립 모듈로 구성, (2) 워치·버즈·폰 모두에서 음성 명령을 기본 입력으로 지원(타이핑은 보조), (3) 최종 목표는 영화 <아이언맨>의 자비스처럼 음성으로 검색·지원·해결·수행. HANDOFF.md 2번 파일 구조에는 ROADMAP.md가 이미 있는 것처럼 적혀 있었지만 실제로는 이번에 처음 생성함(문서-실제 상태 불일치 정정).
+- 변경한 파일: `docs/ROADMAP.md`(신규), `docs/PROGRESS.md`(이 기록)
+- 확인: 문서 작성만 완료. 아버지 본인이 "아직 구체화는 부족하다"고 밝힌 대로, 모듈 경계·인터페이스·기능 우선순위 등 구체적인 설계는 전혀 결정되지 않았음 — ROADMAP.md에 "아직 정해지지 않은 것"으로 명시해둠.
+- 결정 또는 위험: 이 방향(특히 웹 검색·캘린더/알림 실행 등)이 HANDOFF.md 4번 "의도적으로 구현하지 않은 기능" 목록과 겹치는 부분이 있어, 향후 그 목록을 이 로드맵에 맞게 조정할지 별도 논의가 필요함 (아직 결정 안 됨).
+- 다음: 아버지·AI 세션에서 ROADMAP.md의 "아직 정해지지 않은 것" 항목을 하나씩 구체화
+
 ## 2026-08-24 — Gradle assembleDebug 빌드 실패 수정
 - 한 일: `./gradlew :app:assembleDebug --stacktrace` 실행 시 발생한 두 가지 실제 에러를 로그로 확인 후 수정.
   1. 첫 번째 에러: `java.lang.IllegalArgumentException: 25.0.2` (`org.jetbrains.kotlin.com.intellij.util.lang.JavaVersion.parse`에서 발생, `KotlinCoreEnvironment` 생성 중 호출). 원인: 이 Codespace의 기본 JDK가 25.0.2(Microsoft 빌드)였는데, Gradle 8.13에 내장된 Kotlin DSL 스크립트 컴파일러가 `settings.gradle.kts`/`build.gradle.kts`를 해석하는 단계에서 "25.0.2" 버전 문자열을 파싱하지 못해 즉시 실패함. HANDOFF.md 8번 섹션이 "JDK 17이 아닌 다른 버전이 기본으로 잡혀있는 경우"로 미리 예측했던 바로 그 케이스였음을 이번에 직접 확인. sdkman으로 JDK 17(`17.0.20+1-ms`, Microsoft 빌드)을 설치하고 기본값으로 전환해 해결.
