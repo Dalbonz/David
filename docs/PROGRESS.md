@@ -29,3 +29,8 @@
 - 확인: 문서 작성만 완료. Git 저장소 초기화, 실제 `.kt` 소스 파일 이관, Android Studio 빌드는 아직 미완료.
 - 결정 또는 위험: 아들은 채팅(Cowork) 기반, 아버지는 GitHub Codespaces 기반으로 작업 방식을 분리하기로 결정. 두 방식 동기화는 Git으로 하기로 함 (저장소 미생성 상태).
 - 다음: 실제 소스 코드 위치 확인 → 이 폴더로 이관 또는 신규 시작 결정, GitHub 저장소 생성, git init/push 검증.
+
+## 2026-08-24 — GitHub 최초 push 완료
+- 한 일: Codespaces 웹 업로드로 DAVID.zip을 올린 뒤 압축 해제, 정리, git add/commit/push로 GitHub(main 브랜치)에 최초 반영 완료.
+- 확인: raw.githubusercontent.com에서 settings.gradle.kts, docs/PROGRESS.md 내용 직접 대조하여 성공 확인.
+- 다음: gradle wrapper 생성 → 첫 Gradle sync 시도 → Claude Code 설치해 이어서 진행.
