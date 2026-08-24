@@ -24,6 +24,7 @@
 ## 2. 현재 파일 구조
 ```text
 .
+├─ CLAUDE.md                  # Claude Code가 세션마다 자동으로 읽는 안내 — "다비드"/"종료" 시동어 정의 (2026-08-24 신규)
 ├─ .devcontainer/             # Codespaces 컨테이너 생성 시 JDK 17·Android SDK 자동 설치 (2026-08-24 신규)
 │  ├─ devcontainer.json
 │  └─ setup-android-sdk.sh
@@ -36,8 +37,9 @@
 ├─ wear/                      # Galaxy Watch용 Wear OS 앱
 │  └─ src/main/java/com/david/assistant/wear/WearMainActivity.kt
 ├─ docs/
-│  ├─ ROADMAP.md              # 장기 설계와 단계
-│  ├─ GALAXY_SUPPORT.md       # 기기별 지원 범위와 제한
+│  ├─ ROADMAP.md              # 장기 설계와 단계 (2026-08-24 신규 작성)
+│  ├─ PROCESS.md              # 세션 시작/종료 절차 — "다비드"/"종료" 시동어 (2026-08-24 신규)
+│  ├─ GALAXY_SUPPORT.md       # 기기별 지원 범위와 제한 (아직 미작성 — 확인 필요)
 │  ├─ PROGRESS.md             # 날짜별 진행 기록
 │  └─ HANDOFF.md              # 이 문서
 ├─ README.md                  # 처음 실행하는 사람용 안내
@@ -149,6 +151,12 @@ Google Play 등록은 현재 로드맵에 없다. 다만 **나중에 등록을 �
 | 로컬 PC 폴더 (`D:\...\DAVID`) | — | 위 둘의 변경을 받는 미러. PC가 연결 안 될 때는 이 폴더를 거치지 않고 GitHub로 직접 주고받는다 |
 
 즉 "누가 어디서 작업하든 먼저 GitHub 최신 상태를 확인하고, 끝나면 GitHub에 반영한다"가 원칙이다.
+
+**시동어 (2026-08-24 결정)**: 이 원칙을 실제 대화에서 쓰기 쉽게 "다비드"(시작)/"종료"(종료)
+한 쌍의 말로 정했다. 절차의 자세한 내용은 `docs/PROCESS.md` 참고. Codespaces/Claude Code
+세션에서는 `CLAUDE.md`가 이 시동어를 자동으로 인식하도록 연결돼 있다. 채팅(Cowork) 세션은
+자동 인식이 안 돼서, 아들이 대화 시작·종료 시 직접 "다비드"/"종료"를 말하며 `docs/PROCESS.md`를
+따르도록 안내해야 한다 — Cowork에 이 절차를 자동으로 걸어둘 방법이 있는지는 확인 필요.
 
 ## 13. 다음 확인 사항 (신규)
 - `D:\...\DAVID` 폴더가 현재 비어 있음 — 기존에 작성됐다고 알려진 `.kt` 소스 파일들(`MainActivity.kt`, `DavidApp.kt` 등)의 실제 위치를 확인해서 이 폴더로 옮기거나, 여기서 새로 시작할지 결정 필요.
