@@ -12,6 +12,30 @@
 - 다음:
 -->
 
+## 2026-08-31 — 음성 입력·두뇌 방향 확정 (Bixby 웨이크워드 + Claude), 기기 목록 갱신
+- 한 일: 대화로 논의해 두 가지 아키텍처 방향을 확정하고 ROADMAP.md에 기록.
+  1. 음성 입력: 상시 웨이크워드 감지를 직접 만들지 않고, Bixby 커스텀 웨이크워드 기능("다비드"
+     등록) + Bixby 루틴(앱 열기)으로 대체. 앱이 열린 뒤부터(SpeechRecognizer→Brain)는 전부 우리
+     코드가 처리 — Gemini/Bixby는 답변 생성에 관여하지 않음.
+  2. 두뇌: `Brain` 구현체를 우선 Claude로 만들기로 함(`ClaudeBrain`, 아직 미구현). 웹 검색으로
+     확인한 결과 **Claude Pro 구독과 앱에서 쓸 Anthropic API는 별개 결제**임을 확인해 전달함 —
+     Pro 구독이 API 사용량을 커버하지 않고, API는 토큰 단위 종량제로 별도 과금됨.
+  - HANDOFF.md 1번의 "우선 대상" 기기 목록을 실제 가족 기기로 구체화: 폰(Fold 8/S24+/S24 FE/
+    S24 Ultra), 워치(Watch4~8 다양), 버즈(Buds Pro 2~4 다양) — 기존 "S24 FE 이후"라는 뭉뚱그린
+    표현을 정정.
+- 변경한 파일: `docs/HANDOFF.md`(1번 기기 목록), `docs/ROADMAP.md`("확정된 방향" 섹션 신규),
+  `docs/PROGRESS.md`(이 기록)
+- 확인: Bixby 커스텀 웨이크워드 기능 자체의 존재와 설정 위치, Claude Pro/API 별개 결제 여부는
+  웹 검색으로 출처를 확인함(ROADMAP.md에 링크 없이 요지만 옮김, 원 출처는 이 대화 로그 참고).
+  다만 **이 기능이 가족의 실제 기기(전부 S24 세대 + 다양한 워치/버즈)에서 실제로 되는지는 전혀
+  검증 안 됨 — 전부 확인 필요로 남김.**
+- 결정 또는 위험: Claude API 사용은 유료(종량제)이며 HANDOFF.md 1번의 "무료/로컬 우선" 원칙과는
+  결이 다름 — Gemini 품질 문제로 아버지가 의도적으로 선택한 것으로, 사용량은 초기에 많다가
+  안정화될 것으로 예상 중(실측 아님, 아버지 판단). 나중에 Ollama 등 로컬 대안으로 일부 옮길
+  가능성은 열어둠.
+- 다음: Bixby 커스텀 웨이크워드가 가족 기기 각각에서 실제로 되는지 실기기로 확인, `ClaudeBrain`
+  구현(Anthropic API 키 발급 필요), Bixby 루틴이 실제로 앱을 안정적으로 여는지 확인
+
 ## 2026-08-31 — Brain 모듈 도입 (ROADMAP 모듈형 원칙의 첫 구현)
 - 한 일: `app/.../brain/Brain.kt` 신규 작성 — `Brain` 인터페이스(`suspend fun reply(request: AgentRequest): AgentResponse`), `AgentRequest`/`AgentResponse`/`AgentAction`(action 종류는 아직 미정, type 문자열 기반 범용 구조), 임시 구현체 `DemoBrain`(기존 `DavidApp.kt`의 `localReply` 로직을 그대로 옮김). `DavidApp.kt`는 `brain: Brain = DemoBrain()`을 주입받아 `send()`에서 코루틴으로 비동기 호출하도록 수정, 기존 동기 `localReply` 함수는 제거.
 - 변경한 파일: `app/src/main/java/com/david/assistant/brain/Brain.kt`(신규), `app/src/main/java/com/david/assistant/DavidApp.kt`(수정), `docs/HANDOFF.md`(아버지 PC/태블릿/폰 세 접속 경로 표로 구체화 — brain 작업과는 무관한 별도 수정)
