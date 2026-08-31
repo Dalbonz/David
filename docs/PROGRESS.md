@@ -12,6 +12,13 @@
 - 다음:
 -->
 
+## 2026-08-31 — Brain 모듈 도입 (ROADMAP 모듈형 원칙의 첫 구현)
+- 한 일: `app/.../brain/Brain.kt` 신규 작성 — `Brain` 인터페이스(`suspend fun reply(request: AgentRequest): AgentResponse`), `AgentRequest`/`AgentResponse`/`AgentAction`(action 종류는 아직 미정, type 문자열 기반 범용 구조), 임시 구현체 `DemoBrain`(기존 `DavidApp.kt`의 `localReply` 로직을 그대로 옮김). `DavidApp.kt`는 `brain: Brain = DemoBrain()`을 주입받아 `send()`에서 코루틴으로 비동기 호출하도록 수정, 기존 동기 `localReply` 함수는 제거.
+- 변경한 파일: `app/src/main/java/com/david/assistant/brain/Brain.kt`(신규), `app/src/main/java/com/david/assistant/DavidApp.kt`(수정), `docs/HANDOFF.md`(아버지 PC/태블릿/폰 세 접속 경로 표로 구체화 — brain 작업과는 무관한 별도 수정)
+- 확인: `./gradlew :app:assembleDebug` BUILD SUCCESSFUL, `Brain.class`/`DemoBrain.class`/`BrainKt.class` 컴파일 산출물 존재 확인. `MainActivity.kt`는 수정 없이 `DavidApp(onVoiceTap=..., speak=...)`만 호출해 기본 `DemoBrain`으로 자연스럽게 연결되는 것도 코드로 확인. **다만 에뮬레이터/실기기에서 실제로 실행해본 적은 없음 — 실기기 확인은 여전히 미수행.**
+- 결정 또는 위험: 이 브레인 작업은 이 채팅 세션이 아니라 아버지가 에디터에서 직접(2026-08-31) 작성한 것으로 보임 — Claude는 리뷰·빌드 검증만 수행. `AgentAction`은 아직 실제 동작을 수행하지 않는 빈 구조체라, ROADMAP.md의 "검색·지원·해결·수행" 중 "수행" 부분은 전혀 구현 안 된 상태.
+- 다음: 에뮬레이터 또는 실기기에서 실제 실행 확인, `AgentAction` 실제 종류 설계, `Brain`을 다른 구현체로 교체해도 호출부가 안 바뀌는지 실제로 검증
+
 ## 2026-08-24 — 세션 시동어("다비드"/"종료") 및 PROCESS.md 도입
 - 한 일: 아버지(Codespaces)와 아들(채팅)이 각자 세션을 시작/종료할 때 GitHub 상태와 어긋나지
   않게 하기 위한 절차를 "다비드"(시작)/"종료"(종료) 시동어 한 쌍으로 정했다. 사람이 읽는 절차

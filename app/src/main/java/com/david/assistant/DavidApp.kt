@@ -19,18 +19,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.david.assistant.brain.AgentRequest
+import com.david.assistant.brain.Brain
+import com.david.assistant.brain.DemoBrain
+import kotlinx.coroutines.launch
 
 private val Ink = Color(0xFF090A0C); private val Panel = Color(0xFF17191D)
 private val Orange = Color(0xFFFF7A18); private val Cream = Color(0xFFFFF5EC)
 data class ChatMessage(val text: String, val mine: Boolean)
 
-@Composable fun DavidApp(onVoiceTap: ((String) -> Unit) -> Unit, speak: (String) -> Unit) {
+@Composable fun DavidApp(onVoiceTap: ((String) -> Unit) -> Unit, speak: (String) -> Unit, brain: Brain = DemoBrain()) {
     var draft by remember { mutableStateOf("") }
     var messages by remember { mutableStateOf(listOf(ChatMessage("안녕하세요. 저는 다비드입니다. 무엇을 도와드릴까요?", false))) }
+    val scope = rememberCoroutineScope()
     fun send(text: String) {
         if (text.isBlank()) return
-        val answer = localReply(text)
-        messages = messages + ChatMessage(text, true) + ChatMessage(answer, false); draft = ""; speak(answer)
+        messages = messages + ChatMessage(text, true); draft = ""
+        scope.launch {
+            val response = brain.reply(AgentRequest(text))
+            messages = messages + ChatMessage(response.text, false)
+            speak(response.text)
+        }
     }
     MaterialTheme(colorScheme = darkColorScheme(primary = Orange, surface = Panel, background = Ink)) {
         Surface(Modifier.fillMaxSize(), color = Ink) {
@@ -52,8 +61,3 @@ data class ChatMessage(val text: String, val mine: Boolean)
     }
 }
 @Composable private fun DavidMark() { Box(Modifier.size(38.dp).clip(CircleShape).background(Orange), contentAlignment = Alignment.Center) { Box(Modifier.size(21.dp).clip(CircleShape).background(Ink)); Box(Modifier.size(8.dp).clip(CircleShape).background(Cream).align(Alignment.CenterEnd)) } }
-private fun localReply(input: String): String = when {
-    input.contains("시간") -> "현재 시간 확인 기능은 다음 단계에서 기기 도구로 연결할 수 있어요."
-    input.contains("안녕") -> "반가워요. 다비드는 현재 무료 로컬 데모 모드로 동작하고 있어요."
-    else -> "‘$input’이라고 말씀하셨네요. 지금은 기본 대화 화면입니다. README의 다음 단계에 따라 무료 로컬 AI를 연결해 보세요."
-}

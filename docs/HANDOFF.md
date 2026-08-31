@@ -142,15 +142,17 @@ Google Play 등록은 현재 로드맵에 없다. 다만 **나중에 등록을 �
 
 이 순서를 지키지 않으면 "아들과 대화하며 바꾼 내용"과 "아버지가 Codespaces에서 바꾼 내용"이 서로 덮어써질 수 있다.
 
-**세 작업 지점 (2026-08-24 확정)** — 아버지는 PC/모바일 어디서든 브라우저로 GitHub Codespaces + Claude Code를 쓰고, 아들은 이 채팅(Cowork)에서 대화 기반으로 참여한다. **GitHub 저장소(`github.com/Dalbonz/David`)가 유일한 정본(source of truth)** 이며, 세 지점은 아래 원칙으로 연결된다.
+**세 작업 지점 (2026-08-24 확정, 2026-08-31 아버지 쪽 기기 3갈래로 구체화)** — 아들은 이 채팅(Cowork)에서 대화 기반으로 참여하고, 아버지는 기기에 따라 아래 세 가지 방식 중 하나로 같은 GitHub Codespaces 환경에 접속한다. **GitHub 저장소(`github.com/Dalbonz/David`)가 유일한 정본(source of truth)** 이며, 모든 지점은 아래 원칙으로 연결된다.
 
-| 지점 | 무엇을 하든 시작할 때 | 무엇을 하든 끝낼 때 |
-|---|---|---|
-| 아버지 — Codespaces/Claude Code | `git pull`로 최신화 | `docs/PROGRESS.md` 기록 → commit → push |
-| 아들 — 이 채팅 | GitHub의 `docs/HANDOFF.md`, `docs/PROGRESS.md`를 먼저 읽고 현재 상태 파악 (저장소가 Public이라 인증 없이 읽기 가능) | 변경 파일을 사용자에게 전달 → PC 연결 시 로컬 폴더에 직접 반영, 연결 안 될 시 파일로 전달 후 사용자가 Codespaces에 업로드·push |
-| 로컬 PC 폴더 (`D:\...\DAVID`) | — | 위 둘의 변경을 받는 미러. PC가 연결 안 될 때는 이 폴더를 거치지 않고 GitHub로 직접 주고받는다 |
+| 지점 | 접속 방식 | 무엇을 하든 시작할 때 | 무엇을 하든 끝낼 때 |
+|---|---|---|---|
+| 아버지 — PC | Claude Code (이 세션이 실행 중인 방식) | `git pull`로 최신화 | `docs/PROGRESS.md` 기록 → commit → push |
+| 아버지 — 태블릿 | 브라우저 기반 웹 Codespaces | 〃 | 〃 |
+| 아버지 — 폰 | 브라우저 기반 웹 Codespaces (태블릿과 동일 조건) | 〃 | 〃 |
+| 아들 — 이 채팅 | Claude 채팅(Cowork) | GitHub의 `docs/HANDOFF.md`, `docs/PROGRESS.md`를 먼저 읽고 현재 상태 파악 (저장소가 Public이라 인증 없이 읽기 가능) | 변경 파일을 사용자에게 전달 → PC 연결 시 로컬 폴더에 직접 반영, 연결 안 될 시 파일로 전달 후 사용자가 Codespaces에 업로드·push |
+| 로컬 PC 폴더 (`D:\...\DAVID`) | — | — | 위의 변경을 받는 미러. PC가 연결 안 될 때는 이 폴더를 거치지 않고 GitHub로 직접 주고받는다 |
 
-즉 "누가 어디서 작업하든 먼저 GitHub 최신 상태를 확인하고, 끝나면 GitHub에 반영한다"가 원칙이다.
+아버지 쪽 세 기기(PC/태블릿/폰)는 접속 방식만 다를 뿐 모두 같은 Codespaces 환경·같은 GitHub 저장소를 보므로, 절차상 구분 없이 동일하게 "시작 시 `git pull`, 종료 시 커밋·push"만 지키면 된다. 즉 "누가 어느 기기에서 작업하든 먼저 GitHub 최신 상태를 확인하고, 끝나면 GitHub에 반영한다"가 원칙이다.
 
 **시동어 (2026-08-24 결정)**: 이 원칙을 실제 대화에서 쓰기 쉽게 "다비드"(시작)/"종료"(종료)
 한 쌍의 말로 정했다. 절차의 자세한 내용은 `docs/PROCESS.md` 참고. Codespaces/Claude Code
