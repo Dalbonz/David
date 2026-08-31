@@ -39,15 +39,24 @@ HANDOFF.md 2번(현재 파일 구조)에는 이 파일이 이미 있는 것처�
 상시 저전력 리스닝이라는 어려운 부분은 삼성(Bixby)에 맡기고, 실제 질문 인식과 답변 생성은 Bixby/
 Gemini를 거치지 않고 전부 우리 Brain이 담당하는 구조.
 
-### 두뇌: 우선 Claude
-Bixby 내장 Gemini의 응답 품질이 부족하다는 판단(아버지)으로, `Brain` 구현체를 Claude로 만든다
-(`ClaudeBrain`, 아직 미구현 — 지금은 `DemoBrain`만 있음). **Claude Pro 구독($20/월)과 앱이 쓸
-Anthropic API는 별개 상품·별개 결제**임을 확인함 — Pro 구독은 API 사용량으로 넘어오지 않고, 앱에서
-Claude를 호출하려면 API 키를 따로 발급받아 토큰 단위 종량제로 과금된다. 초기엔 사용량이 많고 점차
-안정화될 것으로 예상하고 있음(아버지 판단, 실측 아님). 나중에 사용량이 커지면 HANDOFF.md 1번의
-"무료/로컬 우선" 원칙에 따라 Ollama 등 로컬 대안으로 일부 옮길 가능성도 열어둔다.
+### 두뇌: 우선 Claude (2026-08-31 구현 완료)
+Bixby 내장 Gemini의 응답 품질이 부족하다는 판단(아버지)으로, `Brain` 구현체를 Claude로 만들었다 —
+`app/.../brain/ClaudeBrain.kt`, Anthropic 공식 Java SDK(`anthropic-java`) 사용, 모델은
+`claude-opus-5`. API 키는 `local.properties`의 `CLAUDE_API_KEY`에서 읽어 `BuildConfig`로 앱에
+전달하고(Git에는 절대 안 올라감), `MainActivity.kt`가 키가 있으면 `ClaudeBrain`, 없으면
+`DemoBrain`으로 자동 전환한다. `./gradlew :app:assembleDebug` BUILD SUCCESSFUL로 컴파일 확인함.
+**Claude Pro 구독($20/월)과 앱이 쓰는 Anthropic API는 별개 상품·별개 결제**임을 확인함 — Pro
+구독은 API 사용량으로 넘어오지 않고, 토큰 단위 종량제로 별도 과금된다. 초기엔 사용량이 많고 점차
+안정화될 것으로 예상하고 있음(아버지 판단, 실측 아님). 나중에 사용량이 커지면 Ollama 등 로컬
+대안으로 일부 옮길 가능성도 열어둔다.
+
+빌드 중 `anthropic-java`가 끌고 온 Apache HttpComponents 라이브러리들의 `META-INF/DEPENDENCIES`
+등 메타파일이 충돌하는 문제가 있었음 — `app/build.gradle.kts`의 `packaging.resources.excludes`로
+해결.
 
 **아직 검증 안 됨 (실기기 필요, 확인 필요)**:
+- `ClaudeBrain`이 실제로 Claude 응답을 받아오는지는 컴파일만 확인했고, 앱을 실행해서 실제 API
+  호출까지 확인한 적은 없음 (에뮬레이터/실기기 미실행 — HANDOFF.md 3번 참고)
 - Bixby 커스텀 웨이크워드가 가족 실제 기기(HANDOFF.md 1번 — Fold 8 / S24+ / S24 FE / S24 Ultra,
   Watch4~8, Buds Pro 2~4)에서 실제로 지원되는지. 이 기능은 원래 Galaxy S25/One UI 7.0에서
   시작됐고 "다른 삼성 기기로도 최근 확대됐다"는 출처만 있어, 가족 4대(전부 S24 세대) 각각에서

@@ -11,6 +11,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.david.assistant.brain.Brain
+import com.david.assistant.brain.ClaudeBrain
+import com.david.assistant.brain.DemoBrain
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -24,7 +27,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         tts = TextToSpeech(this) { if (it == TextToSpeech.SUCCESS) tts?.language = Locale.KOREAN }
-        setContent { DavidApp(onVoiceTap = { text -> onHeard = text; requestVoice() }, speak = ::speak) }
+        // 키가 없으면(다른 가족 기기 등) 데모로 자동 대체 — 앱이 죽지 않게.
+        val brain: Brain = if (BuildConfig.CLAUDE_API_KEY.isNotBlank()) ClaudeBrain() else DemoBrain()
+        setContent { DavidApp(onVoiceTap = { text -> onHeard = text; requestVoice() }, speak = ::speak, brain = brain) }
     }
     private fun requestVoice() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startListening()

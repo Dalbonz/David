@@ -12,6 +12,36 @@
 - 다음:
 -->
 
+## 2026-08-31 — ClaudeBrain 구현 (Anthropic API 연동)
+- 한 일: `Brain` 인터페이스의 실제 구현체 `ClaudeBrain`을 만듦. Anthropic 공식 Java SDK
+  (`anthropic-java:2.34.0`, Kotlin은 Java SDK 사용) 추가, `MessageCreateParams`로
+  `claude-opus-5` 모델을 호출해 응답 텍스트를 `AgentResponse`로 반환. 예외 발생 시 앱이 죽지
+  않고 안내 문구를 반환하도록 try/catch 처리.
+  - API 키 보안: `local.properties`의 `CLAUDE_API_KEY`(Git에 안 올라감)를
+    `app/build.gradle.kts`에서 읽어 `BuildConfig.CLAUDE_API_KEY`로 노출. 아버지가
+    console.anthropic.com에서 직접 키를 발급받아 `local.properties`에 넣음(대화창에는 붙여넣지
+    않음, Claude는 값을 들여다보지 않고 존재 여부만 확인).
+  - `MainActivity.kt`: `BuildConfig.CLAUDE_API_KEY`가 있으면 `ClaudeBrain`, 없으면(다른 가족
+    기기 등) `DemoBrain`으로 자동 선택하도록 배선.
+- 변경한 파일: `app/src/main/java/com/david/assistant/brain/ClaudeBrain.kt`(신규),
+  `app/build.gradle.kts`(SDK 의존성 추가, `buildConfig` 활성화, `local.properties`에서
+  `CLAUDE_API_KEY` 읽어 `BuildConfig` 필드로 노출, `packaging.resources.excludes` 추가),
+  `app/src/main/java/com/david/assistant/MainActivity.kt`(Brain 선택 로직),
+  `local.properties`(`CLAUDE_API_KEY` 키 추가 — Git 미포함), `docs/HANDOFF.md`(1번 비용 원칙
+  갱신), `docs/ROADMAP.md`(두뇌 섹션 "구현 완료"로 갱신), `docs/PROGRESS.md`(이 기록)
+- 확인: 처음 빌드 시 `anthropic-java`가 끌고 온 Apache HttpComponents 라이브러리들의
+  `META-INF/DEPENDENCIES` 등 메타파일이 충돌해 `BUILD FAILED`(`DuplicateRelativeFileException`)
+  — `app/build.gradle.kts`에 `packaging.resources.excludes`를 추가해 해결, 재빌드로
+  `BUILD SUCCESSFUL` 확인. 컴파일된 `ClaudeBrain.class`/`.dex` 산출물 존재도 확인함.
+  **다만 앱을 실제로 실행해서 Claude가 진짜 응답을 돌려주는지는 확인 안 됨 — 에뮬레이터/실기기
+  미실행 상태라 이번에도 컴파일 검증까지만 함.**
+- 결정 또는 위험: API 키를 앱(클라이언트)에서 직접 호출하는 구조라, APK가 유출되면 키도 같이
+  유출될 수 있음 — 아버지가 "가족만 쓰는 사이드로딩이라 감수한다"고 판단해 이 구조로 진행하기로
+  함(대신 Git에는 절대 안 올라가게 `local.properties`로 격리). 정석은 서버(프록시)가 키를 들고
+  있는 구조지만, 지금 단계에서는 보류.
+- 다음: 에뮬레이터 또는 실기기에서 실제로 실행해 Claude 응답이 오는지 확인, Bixby 웨이크워드
+  실기기 확인과 합쳐서 전체 파이프라인(음성→ClaudeBrain→TTS) 종단 테스트
+
 ## 2026-08-31 — 음성 입력·두뇌 방향 확정 (Bixby 웨이크워드 + Claude), 기기 목록 갱신
 - 한 일: 대화로 논의해 두 가지 아키텍처 방향을 확정하고 ROADMAP.md에 기록.
   1. 음성 입력: 상시 웨이크워드 감지를 직접 만들지 않고, Bixby 커스텀 웨이크워드 기능("다비드"
